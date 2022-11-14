@@ -13,7 +13,7 @@ create table chucuahang
 go
 create table chucuahang_quyen
 (
-	cccd varchar(13),
+	cccd varchar(13) not null,
 	quyen nvarchar(100) check(quyen in(N'Quản lý hóa đơn nhập',N'Quản lý hóa đơn bán',N'Quản lý hàng hóa',N'Quản lý nhân viên',N'Quản lý khách hàng',N'Quản lý hãng sản xuất')),
 	primary key(cccd,quyen),
 	foreign key(cccd) references chucuahang(cccd)
@@ -40,7 +40,7 @@ create table nhanvien
 go
 create table nhanvien_quyen
 (
-	manv varchar(10),
+	manv varchar(10) not null,
 	quyen nvarchar(100) check(quyen in(N'Lao công',N'Nhân viên bán hàng',N'Nhân viên bảo hành',N'Lễ tân',N'Thu ngân',N'Bảo vệ',N'Nhân viên giao hàng',N'Nhân viên nhập hàng')),
 	primary key(manv,quyen),
 	foreign key(manv) references nhanvien(manv)
@@ -75,13 +75,15 @@ create table hangsx
 go
 create table hanghoa
 (
-	mahang varchar(15) check(mahang like 'hanghoa%'),
+	mahanghoa varchar(15) check(mahanghoa like 'hanghoa%'),
+	mahangsx varchar(30) not null,
 	tenhang nvarchar(50),
 	soluong int check(soluong>=0) not null,
 	gianhap money check(gianhap>0) not null,
 	giaban money check(giaban>0) not null,
 	baohanh int check(baohanh=6 or baohanh=12 or baohanh=18 or baohanh=24),
-	primary key(mahang),
+	primary key(mahanghoa),
+	foreign key (mahangsx) references hangsx(mahangsx),
 	check(giaban>gianhap)
 )
 go
@@ -91,12 +93,13 @@ create table nhaphang
 	manv varchar(10) not null,
 	mahdnhap varchar(10) not null,
 	mahangsx varchar(30) not null,
-	mahang varchar(15) not null,
-	primary key(manv,mahdnhap,mahangsx,mahang),
+	mahanghoa varchar(15) not null,
+	primary key(manv,mahdnhap,mahangsx,mahanghoa),
 	foreign key (manv) references nhanvien(manv),
 	foreign key (mahdnhap) references hoadonnhap(mahdnhap),
 	foreign key (mahangsx) references hangsx(mahangsx),
-	foreign key (mahang) references hanghoa(mahang)
+	foreign key (mahanghoa) references hanghoa(mahanghoa),
+	check(soluong>0)
 )
 go
 create table khachhang
@@ -116,13 +119,15 @@ create table hoadonban
 	ngayban date,
 	trangthai nvarchar(20) check(trangthai in(N'Bị hủy',N'Đang giao',N'Giao thành công')),
 	diadiemnhan nvarchar(100),
-	primary key(mahdban)
+	makh varchar(10) not null,
+	primary key(mahdban),
+	foreign key (makh) references khachhang(makh),
 )
 go
 create table phukien
 (
 	mahhpk varchar(15) primary key,
-	foreign key (mahhpk) references hanghoa(mahang)
+	foreign key (mahhpk) references hanghoa(mahanghoa)
 )
 go
 create table phukien_loai
@@ -137,7 +142,7 @@ create table dienthoai
 (
 	mahhdt varchar(15) primary key,
 	cauhinh ntext,
-	foreign key (mahhdt) references hanghoa(mahang)
+	foreign key (mahhdt) references hanghoa(mahanghoa)
 )
 go
 create table dienthoai_mausac
@@ -165,11 +170,12 @@ go
 create table danhgia
 (
 	PhanHoi ntext,
-	diemdg int check(diemdg>=1 and diemdg<=5),
-	madg varchar(15) check(madg like 'dg%'),
+	diemdanhgia int check(diemdanhgia>=1 and diemdanhgia<=5),
+	solandanhgia int not null,
 	mahdban varchar(10),
-	primary key(madg,mahdban),
-	foreign key (mahdban) references hoadonban(mahdban)
+	primary key(solandanhgia,mahdban),
+	foreign key (mahdban) references hoadonban(mahdban),
+	check(solandanhgia>0)
 )
 go
 create table banhang
@@ -181,7 +187,18 @@ create table banhang
 	manv varchar(10) not null,
 	primary key(makh,mahang,mahdban,manv),
 	foreign key (makh) references khachhang(makh),
-	foreign key (mahang) references hanghoa(mahang),
+	foreign key (mahang) references hanghoa(mahanghoa),
 	foreign key (mahdban) references hoadonban(mahdban),
 	foreign key (manv) references nhanvien(manv)
+)
+create table danhgiakhsp
+(
+	sosao int not null,
+	binhluan ntext,
+	makh varchar(10) not null,
+	mahanghoa varchar(15) not null,
+	primary key(makh,mahanghoa),
+	foreign key (makh) references khachhang(makh),
+	foreign key (mahanghoa) references hanghoa(mahanghoa),
+	check(sosao>=1)
 )
