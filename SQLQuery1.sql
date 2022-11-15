@@ -1,7 +1,5 @@
-create database QLDT
-go
+﻿create database QLDT
 use QLDT
-go
 create table chucuahang
 (
 	ten nvarchar(50),
@@ -10,15 +8,13 @@ create table chucuahang
 	cccd varchar(13) check(cccd not like '%[^0-9]%'),
 	primary key(cccd)
 )
-go
-create table chucuahang_quyen
-(
-	cccd varchar(13) not null,
-	quyen nvarchar(100) check(quyen in(N'Quản lý hóa đơn nhập',N'Quản lý hóa đơn bán',N'Quản lý hàng hóa',N'Quản lý nhân viên',N'Quản lý khách hàng',N'Quản lý hãng sản xuất')),
-	primary key(cccd,quyen),
-	foreign key(cccd) references chucuahang(cccd)
-)
-go
+insert into chucuahang 
+values (N'Tuấn','085314667',N'Hà Nội','038202212344'),
+(N'Vũ','035614667',N'TP.Hồ Chí Minh','038202212214'),
+(N'Nhung','035612667',N'TP.Hồ Chí Minh','038215212214')
+select * from chucuahang
+
+
 create table cuahang
 (
 	ten nvarchar(50),
@@ -26,7 +22,11 @@ create table cuahang
 	sdt varchar(15) check(sdt not like '%[^0-9]%'),
 	primary key(ten)
 )
-go
+insert into cuahang 
+values (N'Hoàng Hà mobile4',N'Hà Nội','0385288459')
+
+select * from cuahang
+
 create table nhanvien
 (
 	manv varchar(10) check(manv like 'nv%'),
@@ -37,7 +37,15 @@ create table nhanvien
 	gioitinh bit check(gioitinh=1 or gioitinh=0),
 	primary key(manv)
 )
-go
+insert into nhanvien 
+values (N'nv1',N'Lê Thị Hoa','2000-01-20',N'Hà Nội','0315988459',0),
+(N'nv2',N'Lê Thị Giang','2001-02-23',N'Hà Nội','0315924559',0),
+(N'nv3',N'Nguyễn Văn Tú','2002-11-20',N'TP.Hồ Chí Minh','0375188459',1),
+(N'nv4',N'Phạm Việt An','2000-01-10',N'TP.Hồ Chí Minh','0515988459',1),
+(N'nv5',N'Vũ Văn Đạt','2000-02-10',N'TP.Hồ Chí Minh','0515974459',1),
+(N'nv6',N'Nguyễn Văn Khánh','2000-09-02',N'Hà Nội','0515988129',1)
+select * from nhanvien
+
 create table nhanvien_quyen
 (
 	manv varchar(10) not null,
@@ -45,18 +53,25 @@ create table nhanvien_quyen
 	primary key(manv,quyen),
 	foreign key(manv) references nhanvien(manv)
 )
-go
+insert into nhanvien_quyen 
+values (N'nv1',N'Nhân viên bán hàng'),(N'nv2',N'Nhân viên bán hàng'),(N'nv3',N'Nhân viên nhập hàng'),(N'nv4',N'Nhân viên bán hàng'),(N'nv5',N'Nhân viên bán hàng'),(N'nv6',N'Nhân viên nhập hàng')
+
+
+select * from nhanvien_quyen
 create table lam
 (
 	manv varchar(10) not null,
-	ten nvarchar(50) not null,
+	ten_cua_hang nvarchar(50) not null,
 	cccd varchar(13) not null,
-	primary key(manv,ten,cccd),
+	primary key(manv,ten_cua_hang,cccd),
 	foreign key (manv) references nhanvien(manv),
-	foreign key (ten) references cuahang(ten),
+	foreign key (ten_cua_hang) references cuahang(ten),
 	foreign key (cccd) references chucuahang(cccd)
 )
-go
+
+
+
+
 create table hoadonnhap
 (
 	mahdnhap varchar(10) check(mahdnhap like 'hdnhap%'),
@@ -67,9 +82,9 @@ go
 create table hangsx
 (
 	mahangsx varchar(30) check(mahangsx like 'hangsx%'),
-	ten nvarchar(50),
+	ten_hang_san_xuat nvarchar(50),
 	sdt varchar(15) check(sdt not like '%[^0-9]%'),
-	diachi nvarchar(100),
+	diachi_hang nvarchar(100),
 	primary key(mahangsx)
 )
 go
@@ -127,32 +142,20 @@ go
 create table phukien
 (
 	mahhpk varchar(15) primary key,
+	loai nvarchar(50) not null unique,
 	foreign key (mahhpk) references hanghoa(mahanghoa)
 )
 go
-create table phukien_loai
-(
-	mahhpk varchar(15),
-	loai nvarchar(100),
-	primary key(mahhpk,loai),
-	foreign key(mahhpk) references phukien(mahhpk)
-)
-go
+
 create table dienthoai
 (
 	mahhdt varchar(15) primary key,
 	cauhinh ntext,
+	mau nvarchar(50) default N'trắng',
 	foreign key (mahhdt) references hanghoa(mahanghoa)
 )
 go
-create table dienthoai_mausac
-(
-	mahhdt varchar(15),
-	mausac nvarchar(50),
-	primary key(mahhdt,mausac),
-	foreign key(mahhdt) references dienthoai(mahhdt)
-)
-go
+
 create table spbaohanh
 (
 	makh varchar(10),
@@ -167,7 +170,7 @@ create table spbaohanh
 	check(ngaytra>ngaynhan)
 )
 go
-create table danhgia
+create table danh_gia_hoa_don
 (
 	PhanHoi ntext,
 	diemdanhgia int check(diemdanhgia>=1 and diemdanhgia<=5),
